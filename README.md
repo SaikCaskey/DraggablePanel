@@ -8,3 +8,7 @@ Due to this issue https://github.com/pedrovgs/DraggablePanel/issues/123 I couldn
 
 FYI-
 I don't intend to maintain this, I'm just making a debug app and I wanted to show off in work
+
+ [ ![Download](https://api.bintray.com/packages/systemecks/system-ecks/sk-DraggablePanel/images/download.svg) ](https://bintray.com/systemecks/system-ecks/sk-DraggablePanel/_latestVersion) 
+ 
+ ```compile 
