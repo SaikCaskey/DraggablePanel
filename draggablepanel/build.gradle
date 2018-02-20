@@ -1,43 +1,112 @@
 apply plugin: 'com.android.library'
-apply plugin: 'checkstyle'
-
-dependencies {
-    compile 'com.android.support:support-v4:20.0.0'
-  compile 'com.nineoldandroids:library:2.4.0'
-}
 
 android {
-  compileSdkVersion Integer.parseInt(project.ANDROID_COMPILE_SDK_VERSION)
-  buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
+    compileSdkVersion 27
+    buildToolsVersion '27.0.2'
 
-  defaultConfig {
-    versionName project.VERSION_NAME
-    versionCode Integer.parseInt(project.VERSION_CODE)
+    def versionPropsFile = file('version.properties')
+    def versionRevision
+    def versionMajor
+    def versionMinor
+    def versionBuild
 
-    targetSdkVersion Integer.parseInt(project.ANDROID_TARGET_SDK_VERSION)
-  }
-
-  sourceSets {
-    main {
-      manifest.srcFile 'AndroidManifest.xml'
-      java.srcDirs = ['src/main/java']
-      res.srcDirs = ['res']
+    /**
+     * Setting default value for versionBuild which is the last incremented
+     * value stored in the file
+     */
+    if (versionPropsFile.canRead()) {
+        Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionPropsFile))
+        versionRevision = versionProps['VERSION_REVISION'].toInteger()
+        versionMajor = versionProps['VERSION_MAJOR'].toInteger()
+        versionMinor = versionProps['VERSION_MINOR'].toInteger()
+        versionBuild = versionProps['VERSION_BUILD'].toInteger()
+    } else {
+        throw new GradleException("Could not read version.properties file! Make sure it's in app/ directory ")
     }
-  }
 
-  lintOptions {
-    abortOnError false
-  }
+    defaultConfig {
+        minSdkVersion 19
+        maxSdkVersion 27
+        //noinspection OldTargetApi
+        targetSdkVersion 27
+        versionCode versionMajor * 1000000 + versionMinor * 10000 + versionRevision * 1000 + versionBuild
+        versionName versionMajor + "." + versionMinor + "." + versionRevision
+        setProperty("archivesBaseName", "sk-draggable-panel-" + versionCode)
+    }
+
+    packagingOptions {
+        exclude 'META-INF/NOTICE' // will not include NOTICE file
+        exclude 'META-INF/LICENSE' // will not include LICENSE file
+        exclude 'META-INF/notice'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license'
+        exclude 'META-INF/license.txt'
+    }
+    sourceSets {
+        test {
+            java.srcDirs = ['src/test/java']
+            resources.srcDirs = ['src/test/res', 'src/main/res']
+        }
+        androidTest {
+            java.srcDirs = ['src/androidTest/java']
+        }
+    }
+    buildTypes {
+        release {
+            useProguard true
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'lib-proguard-rules.pro'
+        }
+    }
+
+    /**
+     * Setting default value for versionBuild which is the last incremented
+     * value stored in the file
+     */
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionPropsFile))
+        versionRevision = versionProps['VERSION_REVISION'].toInteger()
+        versionMajor = versionProps['VERSION_MAJOR'].toInteger()
+        versionMinor = versionProps['VERSION_MINOR'].toInteger()
+        versionBuild = versionProps['VERSION_BUILD'].toInteger()
+    } else {
+        throw new GradleException("Could not read version.properties!")
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    /** Wrapping inside a method avoids auto incrementing on every
+     * gradle task run. Now it runs only when we build apk
+     */
+    ext.autoIncrementBuildNumber = {
+        if (versionPropsFile.canRead()) {
+            def Properties versionProps = new Properties()
+            versionProps.load(new FileInputStream(versionPropsFile))
+            versionBuild = versionProps['VERSION_BUILD'].toInteger() + 1
+            versionProps['VERSION_BUILD'] = versionBuild.toString()
+            versionProps.store(versionPropsFile.newWriter(), null)
+        } else {
+            throw new GradleException("Could not read version.properties!")
+        }
+    }
+
+// Hook to check if the release/debug task is among the tasks to be executed.
+//Let's make use of it
+    gradle.taskGraph.whenReady { taskGraph ->
+        if (taskGraph.hasTask(assembleDebug)) {  /* when run debug task */
+            autoIncrementBuildNumber()
+        } else if (taskGraph.hasTask(assembleRelease)) { /* when run release task */
+            autoIncrementBuildNumber()
+        } else {
+            System.out.print("operation does not qualify for incrememnting build number")
+        }
+    }
 }
-
-apply from: 'https://raw.github.com/jpardogo/gradle-mvn-push/master/gradle-mvn-push.gradle'
-
-
-task checkstyle(type: Checkstyle) {
-  configFile file('../config/checkstyle/checkstyle.xml')
-  source 'src/main/java'
-  include '**/*.java'
-  exclude '**/gen/**'
-
-  classpath = files()
+dependencies {
+    implementation 'com.android.support:support-v4:27.0.2'
 }

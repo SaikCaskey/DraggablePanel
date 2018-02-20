@@ -1,24 +1,19 @@
 buildscript {
-  repositories {
-    mavenCentral()
-  }
-  dependencies {
-    classpath 'com.android.tools.build:gradle:1.0.1'
-  }
+    repositories {
+        mavenCentral()
+        google()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.0.1'
+    }
 }
 
 allprojects {
 
-  version = VERSION_NAME
-  group = GROUP
-
-  repositories {
-    mavenCentral()
-    mavenLocal()
-  }
-}
-
-def isReleaseBuild() {
-  return version.contains("SNAPSHOT") == false
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        google()
+    }
 }
 
