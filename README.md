@@ -11,4 +11,5 @@ I don't intend to maintain this, I'm just making a debug app and I wanted to sho
 
  [ ![Download](https://api.bintray.com/packages/systemecks/system-ecks/sk-DraggablePanel/images/download.svg) ](https://bintray.com/systemecks/system-ecks/sk-DraggablePanel/_latestVersion) 
  
- ```compile 
+ ```compile 'com.github.saikcaskey:systemecks-galgo:1.0.1' ```
+ 
